@@ -1,5 +1,6 @@
 package com.suriya.JWTAuthentication.security;
 
+import com.suriya.JWTAuthentication.filter.JWTFilter;
 import com.suriya.JWTAuthentication.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,14 +15,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    UserDetailsService userDetailsService(){
+    public UserDetailsService userDetailsService(){
         return new CustomUserDetailsService();
+    }
+
+    @Bean
+    public JWTFilter jwtFilter(){
+        return new JWTFilter();
     }
 
     @Bean
@@ -44,6 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request->request
                         .requestMatchers("/login","/register","/authenticated").permitAll()
                         .anyRequest().authenticated())
+                .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(Customizer.withDefaults());
         return http.build();
     }
